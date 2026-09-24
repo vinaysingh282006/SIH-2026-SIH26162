@@ -9,7 +9,7 @@
  */
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, CircleMarker, Tooltip, Popup, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Tooltip, Popup, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { fetchStations, createLiveSocket } from '../api/client';
 import { fetchUnifiedWeather } from '../services/weatherProviders/index.js';
@@ -40,6 +40,19 @@ const WEATHER_LAYERS = [
 ];
 
 /**
+ * Controller to smoothly pan/zoom map to specific coordinates (e.g. India)
+ */
+function MapController({ targetCenter, targetZoom }) {
+  const map = useMap();
+  useEffect(() => {
+    if (targetCenter) {
+      map.flyTo(targetCenter, targetZoom || 5, { duration: 1.2 });
+    }
+  }, [targetCenter, targetZoom, map]);
+  return null;
+}
+
+/**
  * Child component to capture click events anywhere on the Leaflet map canvas
  */
 function MapClickHandler({ onMapClick }) {
@@ -66,12 +79,29 @@ export default function LiveMap() {
   const [inspectError, setInspectError]   = useState(null);
   const [primarySource, setPrimarySource] = useState('open-meteo');
 
+  // Real-time radar timestamp path from RainViewer (covers India Doppler radars)
+  const [radarPath, setRadarPath]         = useState(null);
+  const [mapTarget, setMapTarget]         = useState({ center: [22.5, 82.5], zoom: 5 });
+
   const wsRef = useRef(null);
   const navigate = useNavigate();
 
   // Environment key check for OpenWeatherMap tile overlays
   const owmKey = import.meta.env.VITE_OPENWEATHERMAP_API_KEY || '';
   const hasOwmKey = Boolean(owmKey && !owmKey.includes('your_'));
+
+  // Fetch real-time RainViewer radar frame
+  useEffect(() => {
+    fetch('https://api.rainviewer.com/public/weather-maps.json')
+      .then((r) => r.json())
+      .then((data) => {
+        const past = data.radar?.past;
+        if (Array.isArray(past) && past.length > 0) {
+          setRadarPath(past[past.length - 1].path);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchStations()
@@ -179,6 +209,9 @@ export default function LiveMap() {
 
     // Fallback: RainViewer real-time radar for precipitation
     if (activeLayer === 'precipitation') {
+      if (radarPath) {
+        return `https://tilecache.rainviewer.com${radarPath}/256/{z}/{x}/{y}/2/1_1.png`;
+      }
       return 'https://tilecache.rainviewer.com/v2/radar/nowcast_5/256/{z}/{x}/{y}/2/1_1.png';
     }
 
@@ -194,11 +227,14 @@ export default function LiveMap() {
       <div className="map-container">
         {!loading && (
           <MapContainer
-            center={[22.5, 82.5]}
-            zoom={5}
+            center={mapTarget.center}
+            zoom={mapTarget.zoom}
             style={{ width: '100%', height: '100%' }}
             zoomControl={false}
           >
+            {/* Smooth Pan / Zoom Controller */}
+            <MapController targetCenter={mapTarget.center} targetZoom={mapTarget.zoom} />
+
             {/* Click-to-inspect listener */}
             <MapClickHandler onMapClick={handleMapClick} />
 
@@ -304,9 +340,19 @@ export default function LiveMap() {
           <div className="layer-picker-card">
             <div className="layer-picker-header">
               <span className="layer-picker-title">WEATHER OVERLAYS</span>
-              <span className="layer-source-tag">
-                {hasOwmKey ? 'OWM PRO' : activeLayer === 'precipitation' ? 'OPEN RADAR' : 'SIM'}
-              </span>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  className="btn-snap-india"
+                  onClick={() => setMapTarget({ center: [22.5, 82.5], zoom: 5 })}
+                  title="Center on India Meteorological Network"
+                >
+                  🇮🇳 India
+                </button>
+                <span className="layer-source-tag">
+                  {hasOwmKey ? 'OWM PRO' : activeLayer === 'precipitation' ? 'OPEN RADAR' : 'SIM'}
+                </span>
+              </div>
             </div>
 
             <div className="layer-buttons-row">
@@ -322,6 +368,18 @@ export default function LiveMap() {
                 </button>
               ))}
             </div>
+
+            {/* Free key helper notice when OpenWeatherMap key is unconfigured */}
+            {!hasOwmKey && (activeLayer === 'clouds' || activeLayer === 'temp' || activeLayer === 'wind') && (
+              <div className="layer-key-notice">
+                <span className="lkn-msg">
+                  ⚠️ <strong>Free Key Needed:</strong> For live <em>{activeLayer}</em> tile maps across India, add your key to <code>.env</code> (<code>VITE_OPENWEATHERMAP_API_KEY</code>).
+                </span>
+                <span className="lkn-hint">
+                  💡 Tap any Indian station circle on the map to see real live {activeLayer} data right now without a key!
+                </span>
+              </div>
+            )}
 
             {/* Base map style toggle */}
             <div className="basemap-toggle-row">
