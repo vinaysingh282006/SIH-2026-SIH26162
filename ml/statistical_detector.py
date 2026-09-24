@@ -90,6 +90,21 @@ def _roc_score(series: pd.Series, max_roc: float) -> float:
     return min(delta / max_roc, 5.0)   # cap at 5× for scoring purposes
 
 
+def _drift_score(series: pd.Series) -> float:
+    """Detect persistent linear drift over window."""
+    if len(series) < 8:
+        return 0.0
+    w = series.iloc[-12:].values
+    x = np.arange(len(w))
+    try:
+        slope, _ = np.polyfit(x, w, 1)
+        if abs(slope) > 0.35:
+            return min(abs(slope) / 0.35, 2.0)
+    except Exception:
+        pass
+    return 0.0
+
+
 def detect_statistical(
     window: pd.DataFrame,
     sensor: str,
@@ -98,6 +113,9 @@ def detect_statistical(
     Run all statistical checks on a rolling window for one sensor.
     Returns a dict: {score, flags, sensor}.
     """
+    if len(window) > 0 and pd.isna(window[sensor].iloc[-1]):
+        return {"score": 1.5, "flags": ["sensor_dropout_nan"], "sensor": sensor}
+
     s = window[sensor].dropna()
     if len(s) < 3:
         return {"score": 0.0, "flags": [], "sensor": sensor}
@@ -122,6 +140,12 @@ def detect_statistical(
     if frozen > 0:
         flags.append("frozen_value")
         scores.append(1.5)
+
+    # Drift
+    drift = _drift_score(s)
+    if drift > 0:
+        flags.append("calibration_drift")
+        scores.append(min(drift, 1.8))
 
     # Rate of change
     roc = _roc_score(s, MAX_ROC[sensor])

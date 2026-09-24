@@ -9,12 +9,28 @@
  */
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import L from 'leaflet';
+import * as maplibregl from 'maplibre-gl';
+import { setWorkerUrl } from 'maplibre-gl';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
+import '@maplibre/maplibre-gl-leaflet';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, Popup, useMapEvents, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { fetchStations, createLiveSocket } from '../api/client';
 import { fetchUnifiedWeather } from '../services/weatherProviders/index.js';
 import WeatherComparisonPanel from '../components/WeatherComparisonPanel';
 import './LiveMap.css';
+
+// Ensure MapLibre Web Worker loads correctly inside Vite bundles
+if (typeof window !== 'undefined') {
+  window.maplibregl = maplibregl;
+}
+try {
+  setWorkerUrl(workerUrl);
+} catch (e) {
+  // worker URL fallback handled internally
+}
 
 const STATUS_COLOR = {
   healthy:  '#00FFC8',
@@ -38,6 +54,40 @@ const WEATHER_LAYERS = [
   { id: 'temp',          label: 'Temperature',    icon: '🌡️' },
   { id: 'wind',          label: 'Wind Speed',     icon: '💨' },
 ];
+
+/**
+ * OpenFreeMap vector layer powered by MapLibre GL
+ */
+function OpenFreeMapLayer({ styleName = 'liberty' }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+
+    let glLayer = null;
+    try {
+      glLayer = L.maplibreGL({
+        style: `https://tiles.openfreemap.org/styles/${styleName}`,
+        attribution: '&copy; <a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      });
+      glLayer.addTo(map);
+    } catch (err) {
+      console.warn('[OpenFreeMap] GL Layer init notice:', err);
+    }
+
+    return () => {
+      if (glLayer && map) {
+        try {
+          map.removeLayer(glLayer);
+        } catch (e) {
+          // ignore cleanup errors
+        }
+      }
+    };
+  }, [map, styleName]);
+
+  return null;
+}
 
 /**
  * Controller to smoothly pan/zoom map to specific coordinates (e.g. India)
@@ -72,7 +122,7 @@ export default function LiveMap() {
 
   // Weather overlay & inspection state
   const [activeLayer, setActiveLayer]     = useState('precipitation');
-  const [baseMapStyle, setBaseMapStyle]   = useState('dark'); // 'dark' | 'osm'
+  const [baseMapStyle, setBaseMapStyle]   = useState('openfreemap'); // 'openfreemap' | 'dark' | 'osm'
   const [inspectedPoint, setInspected]    = useState(null);
   const [inspectWeather, setInspectWeather] = useState(null);
   const [inspectLoading, setInspectLoading] = useState(false);
@@ -197,22 +247,25 @@ export default function LiveMap() {
   const getOverlayTileUrl = () => {
     if (activeLayer === 'none') return null;
 
-    if (hasOwmKey) {
-      const layerName = {
-        precipitation: 'precipitation_new',
-        clouds: 'clouds_new',
-        temp: 'temp_new',
-        wind: 'wind_new',
-      }[activeLayer];
-      return `https://tile.openweathermap.org/map/${layerName}/{z}/{x}/{y}.png?appid=${owmKey}`;
-    }
-
-    // Fallback: RainViewer real-time radar for precipitation
+    // Precipitation radar: ALWAYS use the live RainViewer Doppler radar network!
+    // It is 100% free, updated continuously, and never throws 401 key latency.
     if (activeLayer === 'precipitation') {
       if (radarPath) {
         return `https://tilecache.rainviewer.com${radarPath}/256/{z}/{x}/{y}/2/1_1.png`;
       }
       return 'https://tilecache.rainviewer.com/v2/radar/nowcast_5/256/{z}/{x}/{y}/2/1_1.png';
+    }
+
+    // Clouds, Temperature, Wind: stream from OpenWeatherMap when key is configured
+    if (hasOwmKey) {
+      const layerName = {
+        clouds: 'clouds_new',
+        temp: 'temp_new',
+        wind: 'wind_new',
+      }[activeLayer];
+      if (layerName) {
+        return `https://tile.openweathermap.org/map/${layerName}/{z}/{x}/{y}.png?appid=${owmKey}`;
+      }
     }
 
     // For other layers without key, fall back cleanly
@@ -240,12 +293,14 @@ export default function LiveMap() {
             {/* Click-to-inspect listener */}
             <MapClickHandler onMapClick={handleMapClick} />
 
-            {/* Base Tile Layer */}
-            {baseMapStyle === 'dark' ? (
+            {/* Base Tile Layer: OpenFreeMap Vector, Dark Space, or OSM */}
+            {baseMapStyle === 'openfreemap' ? (
+              <OpenFreeMapLayer styleName="liberty" />
+            ) : baseMapStyle === 'dark' ? (
               <TileLayer
-                attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png"
-                maxZoom={19}
+                attribution='&copy; <a href="https://www.esri.com/">Esri</a>, USGS, NOAA'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+                maxZoom={16}
               />
             ) : (
               <TileLayer
@@ -377,28 +432,39 @@ export default function LiveMap() {
             {!hasOwmKey && (activeLayer === 'clouds' || activeLayer === 'temp' || activeLayer === 'wind') && (
               <div className="layer-key-notice">
                 <span className="lkn-msg">
-                  ⚠️ <strong>Free Key Needed:</strong> For live <em>{activeLayer}</em> tile maps across India, add your key to <code>.env</code> (<code>VITE_OPENWEATHERMAP_API_KEY</code>).
+                  ⚠️ <strong>Weather Overlay:</strong> Colored satellite tiles for <em>{activeLayer}</em> require an OpenWeatherMap API key in <code>.env</code>.
                 </span>
                 <span className="lkn-hint">
-                  💡 Tap any Indian station circle on the map to see real live {activeLayer} data right now without a key!
+                  ✓ The <strong>Dark Space</strong> base map is 100% free and needs no key.
+                  <br />
+                  💡 Tap any station circle on the map to see real live {activeLayer} readings from Open-Meteo without a key!
                 </span>
               </div>
             )}
 
-            {/* Base map style toggle */}
+            {/* Base map style toggle: OpenFreeMap, Dark Space, or OSM */}
             <div className="basemap-toggle-row">
               <span className="text-xs text-muted">Base Map:</span>
               <button
+                className={`basemap-btn ${baseMapStyle === 'openfreemap' ? 'active' : ''}`}
+                onClick={() => setBaseMapStyle('openfreemap')}
+                title="Vector tile street map powered by OpenFreeMap"
+              >
+                OpenFreeMap
+              </button>
+              <button
                 className={`basemap-btn ${baseMapStyle === 'dark' ? 'active' : ''}`}
                 onClick={() => setBaseMapStyle('dark')}
+                title="Dark Space (Clean & Watermark-Free Esri Canvas)"
               >
                 Dark Space
               </button>
               <button
                 className={`basemap-btn ${baseMapStyle === 'osm' ? 'active' : ''}`}
                 onClick={() => setBaseMapStyle('osm')}
+                title="Standard OpenStreetMap"
               >
-                Standard OSM
+                OSM
               </button>
             </div>
 

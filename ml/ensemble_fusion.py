@@ -120,14 +120,17 @@ def fuse(
         weights["statistical"]     += weights["lstm_autoencoder"]
         weights["lstm_autoencoder"] = 0.0
 
-    unified = sum(weights[k] * scores[k] for k in scores)
+    import math
+    clean_scores = {k: (1.0 if (isinstance(v, float) and math.isnan(v)) else v) for k, v in scores.items()}
+    unified = sum(weights[k] * clean_scores[k] for k in clean_scores)
+    if math.isnan(unified):
+        unified = 1.0
 
     # Platt-like calibration: sigmoid rescaling
-    import math
     confidence_raw = 1.0 / (1.0 + math.exp(-8.0 * (unified - 0.5)))
     confidence = round(confidence_raw * 100, 1)  # 0–100%
 
-    is_anomaly = unified >= 0.30
+    is_anomaly = unified >= 0.45
     severity   = _severity_from_score(unified) if is_anomaly else None
 
     root_cause = _infer_root_cause(stat_result, cross_result, spatial_result,

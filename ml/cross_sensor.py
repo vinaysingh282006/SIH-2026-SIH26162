@@ -51,7 +51,7 @@ def detect_cross_sensor(window_readings: list[dict]) -> dict:
     p0 = prev.get(FIELD_PRESSURE)
     h0 = prev.get(FIELD_HUMIDITY)
 
-    if any(v is None for v in [t1, p1, h1, t0, p0, h0]):
+    if any(v is None or (isinstance(v, float) and math.isnan(v)) for v in [t1, p1, h1, t0, p0, h0]):
         return {"score": 0.5, "is_anomaly": True, "flags": ["missing_values"], "layer": "cross_sensor"}
 
     # ── Rule 1: Dew-point physical plausibility ──────────────────────────────

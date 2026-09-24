@@ -16,11 +16,16 @@ const NAV_ITEMS = [
   { path: '/roadmap',   label: 'Roadmap',     icon: '⬦' },
 ];
 
-export default function TopBar({ anomalyCount = 0 }) {
+export default function TopBar({ anomalyCount = 0, onOpenTour }) {
   const location = useLocation();
   const { activeWeather } = useWeather();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleLaunchTour = () => {
+    if (onOpenTour) onOpenTour();
+    else window.dispatchEvent(new CustomEvent('open-system-tour'));
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -73,6 +78,16 @@ export default function TopBar({ anomalyCount = 0 }) {
 
           {/* Right section */}
           <div className="topbar-right">
+            {/* Interactive Guided System Tour & Live Test Button */}
+            <button
+              className="topbar-tour-btn"
+              onClick={handleLaunchTour}
+              title="Launch Guided Interactive Showcase & Live System Test"
+            >
+              <span className="tour-sparkle-icon">⚡</span>
+              <span className="tour-label-text">Interactive Tour</span>
+            </button>
+
             {activeWeather?.primary ? (
               <NavLink to="/map" className="topbar-weather-pill" title={`Consensus: ${activeWeather.primary.source} · ${activeWeather.primary.condition} · Click to open live map`}>
                 <span className="tw-icon">{activeWeather.primary.icon}</span>

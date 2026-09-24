@@ -10,6 +10,7 @@ Wraps scikit-learn IsolationForest with:
   - Score normalisation to [0, 1] range
 """
 
+import math
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
@@ -63,9 +64,9 @@ class IsolationForestDetector:
         score is in [0, 1]; threshold at 0.5.
         """
         x = [reading.get(s) for s in SENSOR_VARS]
-        if any(v is None for v in x):
-            # Missing data → treat as anomalous
-            return {"score": 0.8, "is_anomaly": True, "layer": "isolation_forest", "fitted": False}
+        if any(v is None or (isinstance(v, float) and math.isnan(v)) for v in x):
+            # Missing data / dropout → treat as anomalous
+            return {"score": 0.85, "is_anomaly": True, "layer": "isolation_forest", "fitted": False}
 
         # Buffer for rolling re-fit
         self._buffer.append(x)

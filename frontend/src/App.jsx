@@ -14,16 +14,24 @@ import DemoMode         from './pages/DemoMode';
 import StationDetail    from './pages/StationDetail';
 import Roadmap          from './pages/Roadmap';
 import { createLiveSocket } from './api/client';
+import SystemTourModal from './components/SystemTourModal';
 import './App.css';
 
 function AppContent({ anomalyCount }) {
   const { currentCondition } = useWeather();
+  const [tourOpen, setTourOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => setTourOpen(true);
+    window.addEventListener('open-system-tour', handleOpen);
+    return () => window.removeEventListener('open-system-tour', handleOpen);
+  }, []);
 
   return (
     <div className="app-layout">
       {/* Weather-reactive motion background across entire application */}
       <AnimatedBackground condition={currentCondition} />
-      <TopBar anomalyCount={anomalyCount} />
+      <TopBar anomalyCount={anomalyCount} onOpenTour={() => setTourOpen(true)} />
       <main className="main-content">
         <Routes>
           <Route path="/"                    element={<Landing />} />
@@ -38,6 +46,9 @@ function AppContent({ anomalyCount }) {
           <Route path="/roadmap"             element={<Roadmap />} />
         </Routes>
       </main>
+
+      {/* Global Interactive System Tour & Stress Test Modal */}
+      <SystemTourModal isOpen={tourOpen} onClose={() => setTourOpen(false)} />
     </div>
   );
 }

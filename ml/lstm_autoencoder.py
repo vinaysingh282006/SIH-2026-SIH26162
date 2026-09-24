@@ -159,6 +159,11 @@ def load_model(path: Path = MODEL_PATH) -> None:
     print(f"[LSTM-AE] Loaded model from {path}, threshold={_error_baseline:.4f}")
 
 
+def reset_buffers() -> None:
+    """Clear all rolling station buffers."""
+    _buffers.clear()
+
+
 def score_reading(reading: dict) -> dict:
     """
     Score one reading with the LSTM-AE.
@@ -170,9 +175,8 @@ def score_reading(reading: dict) -> dict:
 
     buf = _buffers[sid]
     vals = [reading.get(s) for s in SENSOR_VARS]
-
-    if any(v is None for v in vals):
-        return {"score": 0.8, "is_anomaly": True, "layer": "lstm_autoencoder", "fitted": False}
+    if any(v is None or (isinstance(v, float) and (math.isnan(v) or np.isnan(v))) for v in vals):
+        return {"score": 0.85, "is_anomaly": True, "layer": "lstm_autoencoder", "fitted": False}
 
     buf.push(vals)
 

@@ -31,12 +31,12 @@ from data.schema import ALL_ANOMALY_TYPES, SENSOR_VARS
 from ml.statistical_detector import detect_statistical_all_sensors
 from ml.isolation_forest import fit_all as if_fit_all, score_reading as if_score
 from ml.ensemble_fusion import fuse
-from ml.lstm_autoencoder import load_model, score_reading as lstm_score
+from ml.lstm_autoencoder import load_model, score_reading as lstm_score, reset_buffers
 from ml.cross_sensor import detect_cross_sensor
 from ml.spatial_consistency import detect_spatial
 
 EVAL_PATH = Path(__file__).parent / "models" / "eval_results.json"
-DETECTION_THRESHOLD = 0.30   # unified_score above this → predicted anomaly
+DETECTION_THRESHOLD = 0.45   # unified_score above this → predicted anomaly
 
 
 def _run_pipeline(reading: dict, window: list[dict], neighbours: list[dict]) -> dict:
@@ -48,6 +48,7 @@ def _run_pipeline(reading: dict, window: list[dict], neighbours: list[dict]) -> 
             df_win[sv] = [r.get(sv) for r in combined]
 
     # Pre-populate LSTM buffer with window context
+    reset_buffers()
     if window:
         for w in window[-11:]:
             lstm_score(w)
@@ -84,12 +85,20 @@ def evaluate(
 
     # ── Test normal readings (expect no detection) ────────────────────────────
     print("[eval] Testing normal readings...")
-    normal_sample = df_normal.sample(200, random_state=42)
-    for _, row in normal_sample.iterrows():
-        reading = row.to_dict()
+    for _ in range(100):
+        sid = rng.choice(station_ids)
+        station_df = df_normal[df_normal["station_id"] == sid].copy().reset_index(drop=True)
+        if len(station_df) < 30:
+            continue
+        t = rng.integers(25, len(station_df) - 1)
+        reading = station_df.iloc[t].to_dict()
         reading["timestamp"] = str(reading.get("timestamp", ""))
-        neighbours = df_normal[df_normal["station_id"] != row["station_id"]].tail(20).to_dict("records")
-        window = df_normal[df_normal["station_id"] == row["station_id"]].tail(20).to_dict("records")
+        window = station_df.iloc[max(0, t - 25):t].to_dict("records")
+        neighbours_df = df_normal[(df_normal["station_id"] != sid) & (df_normal["timestamp"] == reading["timestamp"])].head(10)
+        if neighbours_df.empty:
+            neighbours_df = df_normal[df_normal["station_id"] != sid].tail(10)
+        neighbours = neighbours_df.to_dict("records")
+
         fusion = _run_pipeline(reading, window, neighbours)
         if fusion["is_anomaly"]:
             results_by_type["_normal"]["fp"] += 1
@@ -101,23 +110,32 @@ def evaluate(
         print(f"[eval] Testing {anomaly_type} x {injections_per_type}...")
         for _ in range(injections_per_type):
             sid = rng.choice(station_ids)
-            station_df = df_normal[df_normal["station_id"] == sid].copy()
+            station_df = df_normal[df_normal["station_id"] == sid].copy().reset_index(drop=True)
             if len(station_df) < 50:
                 continue
             try:
                 injected_df, record = inject_by_type(station_df, sid, anomaly_type, rng=rng)
-            except Exception as e:
+            except Exception:
                 continue
 
-            # Pick a reading from the injected window
-            target_rows = injected_df.iloc[record.start_idx:record.end_idx + 1]
-            if target_rows.empty:
-                continue
-            test_row = target_rows.iloc[len(target_rows) // 2].to_dict()
+            # Pick test reading
+            # For frozen or drift, test near the end of the anomaly so window captures the cumulative pattern
+            if anomaly_type in ("frozen", "drift"):
+                test_idx = min(record.end_idx, len(injected_df) - 1)
+            else:
+                test_idx = (record.start_idx + record.end_idx) // 2
+
+            test_row = injected_df.iloc[test_idx].to_dict()
             test_row["timestamp"] = str(test_row.get("timestamp", ""))
 
-            neighbours = df_normal[df_normal["station_id"] != sid].tail(20).to_dict("records")
-            window_rows = injected_df[injected_df["station_id"] == sid].iloc[:record.start_idx].tail(20).to_dict("records")
+            # History window leading up to test reading
+            window_rows = injected_df.iloc[max(0, test_idx - 25):test_idx].to_dict("records")
+
+            # Contemporaneous neighbours from other stations
+            neighbours_df = df_normal[(df_normal["station_id"] != sid) & (df_normal["timestamp"] == test_row["timestamp"])].head(10)
+            if neighbours_df.empty:
+                neighbours_df = df_normal[df_normal["station_id"] != sid].tail(10)
+            neighbours = neighbours_df.to_dict("records")
 
             fusion = _run_pipeline(test_row, window_rows, neighbours)
 

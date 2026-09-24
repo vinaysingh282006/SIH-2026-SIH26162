@@ -102,6 +102,39 @@ export default function DemoMode() {
         </div>
       </div>
 
+      {/* ── Guided Showcase Tour Launcher Card ─────────────── */}
+      <div className="demo-showcase-hero card-raised">
+        <div className="showcase-hero-glow" />
+        <div className="showcase-hero-content">
+          <div className="showcase-hero-left">
+            <div className="showcase-badge-row">
+              <span className="showcase-badge">⚡ GUIDED SYSTEM SHOWCASE</span>
+              <span className="showcase-sound-badge">🔊 Web Audio Sound FX</span>
+            </div>
+            <h2 className="showcase-hero-title">Interactive 5-Scenario Walkthrough & Live Stress Test</h2>
+            <p className="showcase-hero-desc">
+              Experience the entire 5-layer detection ensemble in action with real-time procedural audio,
+              radar pulses, false alarm prevention, comms dropout self-healing, and physical limit checks.
+            </p>
+            <div className="showcase-pills-row">
+              <span className="sc-pill">✓ Spatial Consensus</span>
+              <span className="sc-pill">⚡ Instant Hardware Spikes</span>
+              <span className="sc-pill">🛡️ False Positive Prevention</span>
+              <span className="sc-pill">✨ Auto Self-Healing Imputation</span>
+              <span className="sc-pill">🔬 Physics Boundaries</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn-launch-showcase"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-system-tour'))}
+          >
+            <span>🚀 Start Guided Showcase</span>
+            <span className="btn-sound-note">Interactive HUD + Audio</span>
+          </button>
+        </div>
+      </div>
+
       <div className="demo-layout">
         {/* ── Control panel ────────────────────────────────────── */}
         <div className="demo-controls card-raised demo-panel">

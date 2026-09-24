@@ -100,7 +100,7 @@ def detect_spatial(
 
     for sensor in SENSOR_VARS:
         val = reading.get(sensor)
-        if val is None:
+        if val is None or (isinstance(val, float) and math.isnan(val)):
             continue
         estimate = _idw_estimate(lat, lon, closest, sensor)
         if estimate is None:
@@ -109,10 +109,11 @@ def detect_spatial(
         deviation = abs(val - estimate)
 
         # Scale threshold by sensor: temperature sensitive to 5°C, pressure to 15hPa, humidity to 20%
+        # Scale threshold by sensor: Indian stations span coastal to mountain climates
         thresholds = {
-            FIELD_TEMPERATURE: 5.0,
-            FIELD_PRESSURE:    15.0,
-            FIELD_HUMIDITY:    20.0,
+            FIELD_TEMPERATURE: 12.0,
+            FIELD_PRESSURE:    35.0,
+            FIELD_HUMIDITY:    35.0,
         }
         thresh = thresholds.get(sensor, SPATIAL_THRESHOLD)
         if deviation > thresh:
@@ -121,7 +122,7 @@ def detect_spatial(
             scores.append(min(ratio, 2.0))
 
     score = max(scores) if scores else 0.0
-    is_anomaly = score > 0.8  # only flag if clearly out of range vs neighbours
+    is_anomaly = score > 1.0  # only flag if clearly out of range vs neighbours
 
     return {
         "score":         round(score, 4),

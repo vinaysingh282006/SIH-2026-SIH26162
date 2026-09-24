@@ -301,3 +301,45 @@
   .mobile-nav-overlay { display: block; }
   .live-pill { display: none; }
 }
+
+/* ── Guided Interactive Tour Button ──────────────────────────── */
+.topbar-tour-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.38rem 0.85rem;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(0, 255, 200, 0.1) 100%);
+  border: 1px solid rgba(0, 240, 255, 0.45);
+  border-radius: 20px;
+  color: #00F0FF;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.topbar-tour-btn:hover {
+  background: linear-gradient(135deg, #00F0FF 0%, #00FFC8 100%);
+  color: #030812;
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.65);
+  transform: translateY(-1px);
+}
+
+.tour-sparkle-icon {
+  font-size: 0.9rem;
+  filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.8));
+  animation: tourSparkle 1.8s infinite ease-in-out;
+}
+
+@keyframes tourSparkle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.25) rotate(15deg); }
+}
+
+@media (max-width: 640px) {
+  .tour-label-text { display: none; }
+  .topbar-tour-btn { padding: 0.4rem 0.6rem; }
+}
