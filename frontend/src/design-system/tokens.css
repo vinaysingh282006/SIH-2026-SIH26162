@@ -1,0 +1,149 @@
+/* ================================================================
+   SkyGuard AI — Design System Tokens v2.0
+   Deep Space Blue · Mission Control Aesthetic
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* ── Color Palette — Deep Space Blue ──────────────────────────── */
+  --bg-base:           #050A18;
+  --bg-deep:           #020710;
+  --bg-surface:        #0D1528;
+  --bg-surface-raised: #131E35;
+  --bg-surface-hover:  #1A2845;
+  --bg-glass:          rgba(13, 21, 40, 0.7);
+
+  /* Primary accent — Electric Cyan */
+  --cyan:              #00D4FF;
+  --cyan-bright:       #33DFFF;
+  --cyan-dim:          #0099BB;
+  --cyan-glow:         rgba(0, 212, 255, 0.2);
+  --cyan-glow-strong:  rgba(0, 212, 255, 0.4);
+
+  /* Secondary accent — Neon Teal */
+  --teal:              #00FFC8;
+  --teal-bright:       #33FFD5;
+  --teal-dim:          #00BB95;
+  --teal-glow:         rgba(0, 255, 200, 0.15);
+
+  /* Electric Violet */
+  --violet:            #7C3AED;
+  --violet-bright:     #9461F7;
+  --violet-glow:       rgba(124, 58, 237, 0.25);
+
+  /* Status colors */
+  --green:             #10B981;
+  --green-bright:      #34D399;
+  --green-glow:        rgba(16, 185, 129, 0.2);
+
+  --amber:             #F59E0B;
+  --amber-bright:      #FBBF24;
+  --amber-glow:        rgba(245, 158, 11, 0.2);
+
+  --red:               #EF4444;
+  --red-bright:        #F87171;
+  --red-glow:          rgba(239, 68, 68, 0.2);
+
+  --orange:            #F97316;
+  --orange-bright:     #FB923C;
+  --orange-glow:       rgba(249, 115, 22, 0.2);
+
+  /* Text */
+  --text-primary:   #E8F4FD;
+  --text-secondary: #8BA3C7;
+  --text-muted:     #4A6080;
+  --text-data:      #00D4FF;
+
+  /* Borders */
+  --border-color:         rgba(0, 212, 255, 0.15);
+  --border-color-subtle:  rgba(0, 212, 255, 0.06);
+  --border-color-strong:  rgba(0, 212, 255, 0.35);
+
+  /* Status */
+  --status-healthy:  var(--green);
+  --status-warning:  var(--amber);
+  --status-critical: var(--red);
+  --status-offline:  var(--text-muted);
+
+  /* ── Typography ───────────────────────────────────────────────── */
+  --font-ui:    'Outfit', 'Inter', system-ui, sans-serif;
+  --font-data:  'JetBrains Mono', 'Consolas', monospace;
+  --font-hero:  'Space Grotesk', system-ui, sans-serif;
+
+  --text-xs:   0.70rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
+  --text-6xl:  3.75rem;
+  --text-7xl:  4.5rem;
+
+  /* ── Spacing ──────────────────────────────────────────────────── */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* ── Radius ───────────────────────────────────────────────────── */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-2xl: 20px;
+  --radius-pill: 999px;
+
+  /* ── Motion ───────────────────────────────────────────────────── */
+  --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base:   250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-data:   300ms ease;
+
+  /* ── Shadows ──────────────────────────────────────────────────── */
+  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(0, 212, 255, 0.05);
+  --shadow-glow-cyan:   0 0 30px rgba(0, 212, 255, 0.3), 0 0 60px rgba(0, 212, 255, 0.1);
+  --shadow-glow-teal:   0 0 30px rgba(0, 255, 200, 0.25);
+  --shadow-glow-green:  0 0 20px rgba(16, 185, 129, 0.35);
+  --shadow-glow-amber:  0 0 20px rgba(245, 158, 11, 0.35);
+  --shadow-glow-red:    0 0 20px rgba(239, 68, 68, 0.35);
+  --shadow-glow-violet: 0 0 30px rgba(124, 58, 237, 0.3);
+
+  /* ── Z-indices ────────────────────────────────────────────────── */
+  --z-topbar:   100;
+  --z-modal:    200;
+  --z-toast:    300;
+  --z-overlay:  400;
+
+  /* backwards compat */
+  --accent-maroon:        var(--red);
+  --accent-maroon-bright: var(--red-bright);
+  --accent-maroon-glow:   var(--red-glow);
+  --accent-green:         var(--green);
+  --accent-green-bright:  var(--green-bright);
+  --accent-green-glow:    var(--green-glow);
+  --accent-amber:         var(--amber);
+  --accent-amber-bright:  var(--amber-bright);
+  --accent-amber-glow:    var(--amber-glow);
+}
+
+/* ── prefers-reduced-motion ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

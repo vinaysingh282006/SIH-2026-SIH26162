@@ -1,0 +1,6 @@
+/* App.css — minimal, global index.css handles everything */
+
+.app-layout {
+  min-height: 100vh;
+  background: var(--bg-base);
+}

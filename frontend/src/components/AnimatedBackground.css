@@ -1,0 +1,72 @@
+/* AnimatedBackground.css */
+.animated-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.isobar-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.isobar {
+  fill: none;
+  stroke: #A6394F;
+  stroke-width: 1.5;
+}
+
+/* Each isobar drifts at a different speed and offset */
+.isobar-1 { animation: drift1 60s ease-in-out infinite alternate; }
+.isobar-2 { animation: drift2 75s ease-in-out infinite alternate; }
+.isobar-3 { animation: drift3 55s ease-in-out infinite alternate; }
+.isobar-4 { animation: drift4 80s ease-in-out infinite alternate; }
+.isobar-5 { animation: drift5 65s ease-in-out infinite alternate; }
+.isobar-6 { animation: drift6 70s ease-in-out infinite alternate; }
+
+.cloud-1 { animation: cloudDrift1 90s ease-in-out infinite alternate; }
+.cloud-2 { animation: cloudDrift2 110s ease-in-out infinite alternate; }
+.cloud-3 { animation: cloudDrift3 85s ease-in-out infinite alternate; }
+
+@keyframes drift1 {
+  from { transform: translateX(0) translateY(0); }
+  to   { transform: translateX(60px) translateY(-20px); }
+}
+@keyframes drift2 {
+  from { transform: translateX(0) translateY(0); }
+  to   { transform: translateX(-50px) translateY(25px); }
+}
+@keyframes drift3 {
+  from { transform: translateX(0) translateY(0); }
+  to   { transform: translateX(40px) translateY(15px); }
+}
+@keyframes drift4 {
+  from { transform: translateX(0) translateY(0); }
+  to   { transform: translateX(-70px) translateY(-10px); }
+}
+@keyframes drift5 {
+  from { transform: translateX(0) translateY(0); }
+  to   { transform: translateX(55px) translateY(-30px); }
+}
+@keyframes drift6 {
+  from { transform: translateX(0) translateY(0); }
+  to   { transform: translateX(-45px) translateY(20px); }
+}
+@keyframes cloudDrift1 {
+  from { transform: translateX(0) scale(1); }
+  to   { transform: translateX(80px) scale(1.1); }
+}
+@keyframes cloudDrift2 {
+  from { transform: translateX(0) scale(1); }
+  to   { transform: translateX(-90px) scale(0.9); }
+}
+@keyframes cloudDrift3 {
+  from { transform: translateX(0) scale(1); }
+  to   { transform: translateX(60px) scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .isobar, .cloud { animation: none !important; }
+}
