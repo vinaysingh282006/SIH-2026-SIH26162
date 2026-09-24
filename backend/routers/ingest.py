@@ -6,6 +6,7 @@ from backend.pipeline import process_reading
 router = APIRouter(prefix="/ingest", tags=["ingest"])
 
 
+@router.post("", summary="Ingest a new reading from an AWS station or simulator")
 @router.post("/", summary="Ingest a new reading from an AWS station or simulator")
 def ingest(reading: ReadingIn):
     r = reading.model_dump()

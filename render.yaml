@@ -1,0 +1,20 @@
+# SkyGuard AI — Render Blueprint (render.yaml)
+# Use this for 1-Click Zero-Configuration Deployment on Render (https://render.com)
+
+services:
+  # Option 1: Unified Full-Stack Web Service (FastAPI + Built React SPA + WebSockets)
+  - type: web
+    name: skyguard-ai
+    env: python
+    runtime: python-3.11
+    plan: free
+    region: oregon
+    buildCommand: "./build.sh"
+    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: NODE_VERSION
+        value: 20.12.0
