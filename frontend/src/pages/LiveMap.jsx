@@ -229,6 +229,8 @@ export default function LiveMap() {
           <MapContainer
             center={mapTarget.center}
             zoom={mapTarget.zoom}
+            minZoom={3}
+            maxZoom={18}
             style={{ width: '100%', height: '100%' }}
             zoomControl={false}
           >
@@ -253,13 +255,15 @@ export default function LiveMap() {
               />
             )}
 
-            {/* Weather Overlay Tile Layer */}
+            {/* Weather Overlay Tile Layer with maxNativeZoom to prevent zoom-not-supported tiles */}
             {overlayUrl && (
               <TileLayer
-                key={`${activeLayer}-${hasOwmKey ? 'owm' : 'radar'}`}
+                key={`${activeLayer}-${hasOwmKey ? 'owm' : 'radar'}-${radarPath}`}
                 url={overlayUrl}
                 opacity={0.65}
                 zIndex={20}
+                maxZoom={18}
+                maxNativeZoom={hasOwmKey ? 12 : 7}
               />
             )}
 
