@@ -49,6 +49,17 @@ def get_all_stations() -> list[dict]:
             "elevation_m": elev,
             "region":      region,
         })
+
+    # Integrate real IMD AWS stations from user's DATASET/ folder (Uttarakhand AWS network)
+    uk_path = Path(__file__).parent / "generated" / "uttarakhand_aws_stations.json"
+    if uk_path.exists():
+        try:
+            with open(uk_path) as f:
+                uk_stations = json.load(f)
+                result.extend(uk_stations)
+        except Exception:
+            pass
+
     return result
 
 

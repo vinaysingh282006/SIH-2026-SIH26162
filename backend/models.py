@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 
 class ReadingIn(BaseModel):
     station_id:    str
-    timestamp:     str                     # ISO-8601
+    timestamp:     Optional[str] = None    # Defaults to now(UTC) if omitted
     temperature_c: Optional[float] = None
     pressure_hpa:  Optional[float] = None
     humidity_pct:  Optional[float] = None

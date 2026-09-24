@@ -117,14 +117,14 @@ def ingest_file(
         raise ValueError(f"Could not automatically detect columns for: {missing}. Specify with --col-temp, etc.")
 
     # Build standardized dataframe
-    df_clean = pd.DataFrame()
+    df_clean = pd.DataFrame(index=df_raw.index)
     if target_station and target_station in df_raw.columns:
         df_clean[FIELD_STATION_ID] = df_raw[target_station].astype(str).str.strip()
     else:
         df_clean[FIELD_STATION_ID] = station_id_default
 
-    # Parse timestamps
-    df_clean[FIELD_TIMESTAMP] = pd.to_datetime(df_raw[target_time], errors="coerce").dt.strftime("%Y-%m-%d %H:%M:%S")
+    # Parse timestamps (support international DD.MM.YYYY and ISO formats)
+    df_clean[FIELD_TIMESTAMP] = pd.to_datetime(df_raw[target_time], errors="coerce", dayfirst=True).dt.strftime("%Y-%m-%d %H:%M:%S")
 
     # Values and conversions
     df_clean[FIELD_TEMPERATURE] = convert_temperature_to_celsius(pd.to_numeric(df_raw[target_temp], errors="coerce"), temp_unit)

@@ -4,9 +4,21 @@ from backend.state import state
 router = APIRouter(prefix="/stations", tags=["stations"])
 
 
+import json
+from pathlib import Path
+
 @router.get("/", summary="List all stations with current health and status")
 def list_stations():
     return state.all_stations()
+
+
+@router.get("/census/national", summary="Official MoES/IMD National AWS & ARG Deployment Census")
+def get_national_census():
+    census_file = Path(__file__).parent.parent.parent / "data" / "generated" / "national_aws_census.json"
+    if census_file.exists():
+        with open(census_file) as f:
+            return json.load(f)
+    return {"message": "Census data not yet ingested"}
 
 
 @router.get("/{station_id}", summary="Get one station's metadata + health")

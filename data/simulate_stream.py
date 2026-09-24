@@ -95,8 +95,20 @@ if __name__ == "__main__":
     parser.add_argument("--interval",  type=float, default=5.0, help="Seconds between batches")
     parser.add_argument("--inject-anomalies", action="store_true")
     parser.add_argument("--inject-prob", type=float, default=0.05, help="Probability of anomaly per reading")
+    parser.add_argument("--live-api", action="store_true", help="Fetch and stream authentic real-time weather from Open-Meteo")
     parser.add_argument("--verbose",   action="store_true", default=True)
     args = parser.parse_args()
+
+    if args.live_api:
+        from data.simulate_live_api import stream_real_weather
+        stream_real_weather(
+            url=args.url,
+            num_stations=args.stations,
+            interval_s=args.interval,
+            inject_anomalies=args.inject_anomalies,
+            inject_prob=args.inject_prob,
+        )
+        sys.exit(0)
 
     all_ids = [s["station_id"] for s in get_all_stations()]
     station_ids = all_ids[: min(args.stations, len(all_ids))]

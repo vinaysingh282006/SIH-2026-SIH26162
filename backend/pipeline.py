@@ -98,11 +98,11 @@ def process_reading(
     # ── Enrich reading ────────────────────────────────────────────────────────
     enriched = {
         **reading,
-        "is_anomaly":    fusion["is_anomaly"],
-        "anomaly_score": fusion["unified_score"],
-        "severity":      fusion.get("severity"),
-        "root_cause":    fusion.get("root_cause"),
-        "confidence":    fusion.get("confidence", 0.0),
+        "is_anomaly":    bool(fusion["is_anomaly"]),
+        "anomaly_score": float(fusion["unified_score"]),
+        "severity":      str(fusion.get("severity") or ""),
+        "root_cause":    str(fusion.get("root_cause") or ""),
+        "confidence":    float(fusion.get("confidence", 0.0)),
         "explanation":   explanation_data.get("reasoning_text"),
         "layer_scores":  fusion.get("layer_scores", {}),
         "shap_bars":     explanation_data.get("shap_bars", []),

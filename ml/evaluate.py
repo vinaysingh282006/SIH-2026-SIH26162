@@ -41,15 +41,21 @@ DETECTION_THRESHOLD = 0.30   # unified_score above this → predicted anomaly
 
 def _run_pipeline(reading: dict, window: list[dict], neighbours: list[dict]) -> dict:
     """Run the full detection ensemble and return the fusion result."""
-    df_win = pd.DataFrame(window) if window else pd.DataFrame([reading])
-    if SENSOR_VARS[0] not in df_win.columns:
-        for sv in SENSOR_VARS:
-            df_win[sv] = [r.get(sv) for r in window] if window else [reading.get(sv)]
+    combined = list(window) + [reading] if window else [reading]
+    df_win = pd.DataFrame(combined)
+    for sv in SENSOR_VARS:
+        if sv not in df_win.columns:
+            df_win[sv] = [r.get(sv) for r in combined]
 
-    stat   = detect_statistical_all_sensors(df_win)
+    # Pre-populate LSTM buffer with window context
+    if window:
+        for w in window[-11:]:
+            lstm_score(w)
+
+    stat    = detect_statistical_all_sensors(df_win)
     iforest = if_score(reading)
-    lstm   = lstm_score(reading)
-    cross  = detect_cross_sensor(window[-6:] if len(window) >= 6 else window)
+    lstm    = lstm_score(reading)
+    cross   = detect_cross_sensor(combined[-6:] if len(combined) >= 6 else combined)
     spatial = detect_spatial(reading, neighbours)
     return fuse(stat, iforest, lstm, cross, spatial)
 
@@ -61,13 +67,13 @@ def evaluate(
 ) -> dict:
     rng = np.random.default_rng(seed)
 
-    print("[eval] Generating normal baseline data…")
+    print("[eval] Generating normal baseline data...")
     df_normal = generate_all_stations(hours=hours)
 
-    print("[eval] Fitting Isolation Forest on normal data…")
+    print("[eval] Fitting Isolation Forest on normal data...")
     if_fit_all(df_normal)
 
-    print("[eval] Loading LSTM-AE checkpoint (if available)…")
+    print("[eval] Loading LSTM-AE checkpoint (if available)...")
     load_model()
 
     station_ids = df_normal["station_id"].unique().tolist()
@@ -77,7 +83,7 @@ def evaluate(
     results_by_type["_normal"] = {"tp": 0, "fp": 0, "fn": 0, "tn": 0}
 
     # ── Test normal readings (expect no detection) ────────────────────────────
-    print("[eval] Testing normal readings…")
+    print("[eval] Testing normal readings...")
     normal_sample = df_normal.sample(200, random_state=42)
     for _, row in normal_sample.iterrows():
         reading = row.to_dict()
@@ -92,7 +98,7 @@ def evaluate(
 
     # ── Test each anomaly type ────────────────────────────────────────────────
     for anomaly_type in ALL_ANOMALY_TYPES:
-        print(f"[eval] Testing {anomaly_type} × {injections_per_type}…")
+        print(f"[eval] Testing {anomaly_type} x {injections_per_type}...")
         for _ in range(injections_per_type):
             sid = rng.choice(station_ids)
             station_df = df_normal[df_normal["station_id"] == sid].copy()
@@ -169,7 +175,7 @@ def evaluate(
     EVAL_PATH.parent.mkdir(exist_ok=True)
     with open(EVAL_PATH, "w") as f:
         json.dump(summary, f, indent=2)
-    print(f"[eval] Saved → {EVAL_PATH}")
+    print(f"[eval] Saved -> {EVAL_PATH}")
 
     return summary
 

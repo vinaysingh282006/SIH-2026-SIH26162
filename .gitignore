@@ -19,11 +19,12 @@ env/
 .env
 *.env
 
-# ML model artifacts (large files — don't commit)
-ml/models/*.pt
+# ML model artifacts (permit lightweight trained checkpoints)
 ml/models/*.onnx
 ml/models/*.pkl
 ml/models/*.joblib
+!ml/models/lstm_ae.pt
+!ml/models/eval_results.json
 
 # Data
 data/generated/
