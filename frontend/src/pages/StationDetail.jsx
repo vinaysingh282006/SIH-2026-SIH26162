@@ -8,6 +8,9 @@ import {
   ReferenceLine, ResponsiveContainer, Legend
 } from 'recharts';
 import { fetchStation, fetchStationReadings, fetchStationHealth } from '../api/client';
+import { fetchUnifiedWeather } from '../services/weatherProviders/index.js';
+import WeatherComparisonPanel from '../components/WeatherComparisonPanel';
+import { useWeather } from '../context/WeatherContext';
 import './StationDetail.css';
 
 const SENSOR_CONFIG = [
@@ -48,11 +51,37 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function StationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { setCurrentCondition } = useWeather();
   const [station,  setStation]  = useState(null);
   const [readings, setReadings] = useState([]);
   const [health,   setHealth]   = useState(null);
   const [showCorrected, setShowCorrected] = useState(false);
   const [loading,  setLoading]  = useState(true);
+
+  // Multi-source weather consensus state
+  const [weatherData, setWeatherData] = useState(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [primarySource, setPrimarySource] = useState('open-meteo');
+
+  const loadStationWeather = async (lat, lon, preferred = primarySource, bypass = false) => {
+    setWeatherLoading(true);
+    try {
+      const data = await fetchUnifiedWeather({
+        lat,
+        lon,
+        primarySourceId: preferred,
+        bypassCache: bypass,
+      });
+      setWeatherData(data);
+      if (data.primary?.condition) {
+        setCurrentCondition(data.primary.condition);
+      }
+    } catch (e) {
+      console.warn('[StationDetail] Multi-source fetch error:', e);
+    } finally {
+      setWeatherLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -65,6 +94,9 @@ export default function StationDetail() {
       setReadings(rd.map(r => ({ ...r, ts: new Date(r.timestamp).getTime() })));
       setHealth(hlt);
       setLoading(false);
+      if (st?.lat && st?.lon) {
+        loadStationWeather(st.lat, st.lon);
+      }
     }).catch(() => setLoading(false));
   }, [id]);
 
@@ -118,6 +150,23 @@ export default function StationDetail() {
           </span>
         </div>
       </div>
+
+      {/* ── Multi-Source Weather Consensus Panel ───────────── */}
+      {station?.lat && station?.lon && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <WeatherComparisonPanel
+            weatherData={weatherData}
+            isLoading={weatherLoading}
+            onSelectPrimary={(newPrimary) => {
+              setPrimarySource(newPrimary);
+              loadStationWeather(station.lat, station.lon, newPrimary, false);
+            }}
+            onRefresh={() => {
+              loadStationWeather(station.lat, station.lon, primarySource, true);
+            }}
+          />
+        </div>
+      )}
 
       {/* ── Charts ──────────────────────────────────────────── */}
       <div className="charts-stack">

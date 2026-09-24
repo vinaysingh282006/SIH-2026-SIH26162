@@ -1,72 +1,237 @@
-/* AnimatedBackground.css */
+/* ================================================================
+   SkyGuard AI — Weather-Reactive Motion Background Styles
+   ================================================================ */
+
 .animated-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  transition: background-color 1.5s ease;
 }
 
+/* Ambient dynamic backdrop glow */
+.bg-aura-glow {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  filter: blur(80px);
+  opacity: 0.45;
+  transition: background 2s ease, opacity 1.5s ease;
+}
+
+/* Weather-specific ambient tinting */
+.weather-bg-clear .bg-aura-glow {
+  background: radial-gradient(circle at 75% 20%, rgba(0, 212, 255, 0.16) 0%, rgba(124, 58, 237, 0.08) 45%, transparent 70%);
+}
+
+.weather-bg-clouds .bg-aura-glow {
+  background: radial-gradient(circle at 50% 30%, rgba(56, 89, 138, 0.22) 0%, rgba(15, 23, 42, 0.3) 60%, transparent 80%);
+}
+
+.weather-bg-rain .bg-aura-glow {
+  background: radial-gradient(circle at 60% 40%, rgba(30, 75, 125, 0.28) 0%, rgba(11, 26, 56, 0.35) 50%, transparent 85%);
+}
+
+.weather-bg-thunderstorm .bg-aura-glow {
+  background: radial-gradient(circle at 50% 30%, rgba(109, 40, 217, 0.25) 0%, rgba(30, 58, 138, 0.3) 50%, transparent 80%);
+}
+
+.weather-bg-snow .bg-aura-glow {
+  background: radial-gradient(circle at 50% 30%, rgba(186, 230, 253, 0.15) 0%, rgba(59, 130, 246, 0.1) 50%, transparent 75%);
+}
+
+.weather-bg-fog .bg-aura-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(71, 85, 105, 0.25) 0%, rgba(30, 41, 59, 0.2) 60%, transparent 80%);
+}
+
+/* Isobar SVG contour styling */
 .isobar-svg {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
 }
 
 .isobar {
   fill: none;
-  stroke: #A6394F;
   stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
 }
 
-/* Each isobar drifts at a different speed and offset */
-.isobar-1 { animation: drift1 60s ease-in-out infinite alternate; }
-.isobar-2 { animation: drift2 75s ease-in-out infinite alternate; }
-.isobar-3 { animation: drift3 55s ease-in-out infinite alternate; }
-.isobar-4 { animation: drift4 80s ease-in-out infinite alternate; }
-.isobar-5 { animation: drift5 65s ease-in-out infinite alternate; }
-.isobar-6 { animation: drift6 70s ease-in-out infinite alternate; }
+.isobar-1 { animation: isobarFloat1 45s ease-in-out infinite alternate; }
+.isobar-2 { animation: isobarFloat2 55s ease-in-out infinite alternate; }
+.isobar-3 { animation: isobarFloat3 50s ease-in-out infinite alternate; }
+.isobar-4 { animation: isobarFloat4 60s ease-in-out infinite alternate; }
 
-.cloud-1 { animation: cloudDrift1 90s ease-in-out infinite alternate; }
-.cloud-2 { animation: cloudDrift2 110s ease-in-out infinite alternate; }
-.cloud-3 { animation: cloudDrift3 85s ease-in-out infinite alternate; }
+@keyframes isobarFloat1 {
+  0%   { transform: translateY(0) scaleY(1); }
+  100% { transform: translateY(-30px) scaleY(1.08); }
+}
+@keyframes isobarFloat2 {
+  0%   { transform: translateY(0) scaleY(1); }
+  100% { transform: translateY(25px) scaleY(0.95); }
+}
+@keyframes isobarFloat3 {
+  0%   { transform: translateY(0) scaleY(1); }
+  100% { transform: translateY(-20px) scaleY(1.04); }
+}
+@keyframes isobarFloat4 {
+  0%   { transform: translateY(0) scaleY(1); }
+  100% { transform: translateY(35px) scaleY(0.92); }
+}
 
-@keyframes drift1 {
-  from { transform: translateX(0) translateY(0); }
-  to   { transform: translateX(60px) translateY(-20px); }
-}
-@keyframes drift2 {
-  from { transform: translateX(0) translateY(0); }
-  to   { transform: translateX(-50px) translateY(25px); }
-}
-@keyframes drift3 {
-  from { transform: translateX(0) translateY(0); }
-  to   { transform: translateX(40px) translateY(15px); }
-}
-@keyframes drift4 {
-  from { transform: translateX(0) translateY(0); }
-  to   { transform: translateX(-70px) translateY(-10px); }
-}
-@keyframes drift5 {
-  from { transform: translateX(0) translateY(0); }
-  to   { transform: translateX(55px) translateY(-30px); }
-}
-@keyframes drift6 {
-  from { transform: translateX(0) translateY(0); }
-  to   { transform: translateX(-45px) translateY(20px); }
-}
+/* Clouds drift */
+.cloud-1 { animation: cloudDrift1 70s ease-in-out infinite alternate; }
+.cloud-2 { animation: cloudDrift2 90s ease-in-out infinite alternate; }
+.cloud-3 { animation: cloudDrift3 65s ease-in-out infinite alternate; }
+
 @keyframes cloudDrift1 {
-  from { transform: translateX(0) scale(1); }
-  to   { transform: translateX(80px) scale(1.1); }
+  0%   { transform: translateX(0) scale(1); }
+  100% { transform: translateX(80px) scale(1.08); }
 }
 @keyframes cloudDrift2 {
-  from { transform: translateX(0) scale(1); }
-  to   { transform: translateX(-90px) scale(0.9); }
+  0%   { transform: translateX(0) scale(1); }
+  100% { transform: translateX(-90px) scale(0.95); }
 }
 @keyframes cloudDrift3 {
-  from { transform: translateX(0) scale(1); }
-  to   { transform: translateX(60px) scale(1.05); }
+  0%   { transform: translateX(0) scale(1); }
+  100% { transform: translateX(50px) scale(1.04); }
 }
 
+/* Sun Core Pulse */
+.sun-core {
+  animation: sunPulse 12s ease-in-out infinite alternate;
+}
+@keyframes sunPulse {
+  0%   { transform: scale(1); opacity: 0.12; }
+  100% { transform: scale(1.15); opacity: 0.22; }
+}
+
+/* Rain Streaks */
+.rain-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.rain-streak {
+  position: absolute;
+  top: -60px;
+  width: 1.5px;
+  background: linear-gradient(180deg, rgba(0, 212, 255, 0.8), rgba(255, 255, 255, 0.1));
+  border-radius: 999px;
+  transform: rotate(14deg);
+  animation: rainFall linear infinite;
+  will-change: transform;
+}
+
+@keyframes rainFall {
+  0% {
+    transform: translateY(-60px) translateX(0) rotate(14deg);
+  }
+  100% {
+    transform: translateY(105vh) translateX(60px) rotate(14deg);
+  }
+}
+
+/* Snow Flakes */
+.snow-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.snow-flake {
+  position: absolute;
+  top: -20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  animation: snowFall ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes snowFall {
+  0% {
+    transform: translateY(-20px) translateX(0);
+  }
+  50% {
+    transform: translateY(50vh) translateX(25px);
+  }
+  100% {
+    transform: translateY(105vh) translateX(-20px);
+  }
+}
+
+/* Fog Layers */
+.fog-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0.15;
+}
+
+.fog-layer {
+  position: absolute;
+  width: 250%;
+  height: 60%;
+  background: radial-gradient(ellipse at center, rgba(148, 163, 184, 0.4) 0%, transparent 70%);
+  filter: blur(40px);
+}
+
+.fog-layer-1 {
+  top: 20%;
+  left: -50%;
+  animation: fogDrift1 50s linear infinite alternate;
+}
+
+.fog-layer-2 {
+  top: 50%;
+  left: -30%;
+  animation: fogDrift2 65s linear infinite alternate;
+}
+
+@keyframes fogDrift1 {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(200px); }
+}
+@keyframes fogDrift2 {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-220px); }
+}
+
+/* Thunderstorm Lightning Flash */
+.lightning-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 60% 30%, rgba(224, 231, 255, 0.08), transparent 75%);
+  opacity: 0;
+  animation: lightningStrobe 14s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes lightningStrobe {
+  0%, 92%, 94%, 96%, 100% { opacity: 0; }
+  93% { opacity: 0.18; }
+  95% { opacity: 0.26; }
+}
+
+/* Accessibility: prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
-  .isobar, .cloud { animation: none !important; }
+  .isobar-1, .isobar-2, .isobar-3, .isobar-4,
+  .cloud-1, .cloud-2, .cloud-3,
+  .sun-core,
+  .rain-streak,
+  .snow-flake,
+  .fog-layer-1, .fog-layer-2,
+  .lightning-flash {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .rain-container, .snow-container, .lightning-flash {
+    display: none !important;
+  }
 }

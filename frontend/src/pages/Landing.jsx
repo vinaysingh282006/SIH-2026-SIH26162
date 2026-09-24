@@ -200,14 +200,18 @@ const HOW_STEPS = [
 ];
 
 const TECH_STACK = [
-  { name: 'Python 3.14', cat: 'Runtime', color: 'var(--cyan)' },
-  { name: 'FastAPI', cat: 'API', color: 'var(--teal)' },
-  { name: 'PyTorch', cat: 'ML', color: 'var(--orange)' },
-  { name: 'scikit-learn', cat: 'ML', color: 'var(--violet-bright)' },
-  { name: 'React 19', cat: 'Frontend', color: 'var(--cyan)' },
-  { name: 'Recharts', cat: 'Charts', color: 'var(--amber)' },
-  { name: 'Leaflet', cat: 'Maps', color: 'var(--green-bright)' },
-  { name: 'WebSockets', cat: 'Realtime', color: 'var(--teal)' },
+  { name: 'Open-Meteo',     cat: 'Global NWP',  color: 'var(--cyan)' },
+  { name: 'OpenWeatherMap', cat: 'Radar & Tiles', color: 'var(--orange)' },
+  { name: 'NOAA NWS',       cat: 'Official US', color: 'var(--teal)' },
+  { name: 'Meteoblue',      cat: 'Precision API', color: 'var(--violet-bright)' },
+  { name: 'Python 3.14',    cat: 'Runtime',     color: 'var(--cyan)' },
+  { name: 'FastAPI',        cat: 'API',         color: 'var(--teal)' },
+  { name: 'PyTorch',        cat: 'ML',          color: 'var(--orange)' },
+  { name: 'scikit-learn',   cat: 'ML',          color: 'var(--violet-bright)' },
+  { name: 'React 19',       cat: 'Frontend',    color: 'var(--cyan)' },
+  { name: 'Recharts',       cat: 'Charts',      color: 'var(--amber)' },
+  { name: 'Leaflet',        cat: 'Maps',        color: 'var(--green-bright)' },
+  { name: 'WebSockets',     cat: 'Realtime',    color: 'var(--teal)' },
 ];
 
 export default function Landing() {

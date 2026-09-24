@@ -149,6 +149,42 @@
   flex-shrink: 0;
 }
 
+.topbar-weather-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill, 999px);
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  text-decoration: none;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--text-primary, #E8F4FD);
+  transition: all var(--transition-fast, 0.2s ease);
+}
+
+.topbar-weather-pill:hover {
+  background: rgba(0, 212, 255, 0.18);
+  border-color: var(--cyan, #00D4FF);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
+}
+
+.tw-icon {
+  font-size: 0.9rem;
+}
+
+.tw-temp {
+  font-weight: 700;
+  color: var(--cyan, #00D4FF);
+}
+
+.tw-source {
+  font-size: 0.65rem;
+  color: var(--text-muted, #4A6080);
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  padding-left: 5px;
+}
+
 .live-pill {
   display: flex;
   align-items: center;

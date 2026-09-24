@@ -1,6 +1,13 @@
-/* App.css — minimal, global index.css handles everything */
+/* App.css — Global application shell layout */
 
 .app-layout {
   min-height: 100vh;
-  background: var(--bg-base);
+  position: relative;
+  background: var(--bg-base, #050A18);
+  overflow-x: hidden;
+}
+
+.main-content {
+  position: relative;
+  z-index: 1;
 }

@@ -131,3 +131,51 @@
 }
 
 .result-item { display: flex; flex-direction: column; gap: var(--space-1); }
+
+/* ── Atmospheric Motion Simulation ───────────────────────────── */
+.demo-weather-sim-box {
+  background: var(--bg-surface, #0D1528);
+  border: 1px solid var(--border-color, rgba(0, 212, 255, 0.15));
+  border-radius: var(--radius-md, 8px);
+  padding: var(--space-3, 0.75rem);
+}
+
+.weather-sim-btn-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.weather-sim-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-surface-raised, #131E35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm, 6px);
+  color: var(--text-secondary, #8BA3C7);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.weather-sim-btn:hover {
+  background: rgba(0, 212, 255, 0.12);
+  border-color: rgba(0, 212, 255, 0.3);
+  color: var(--text-primary, #E8F4FD);
+}
+
+.weather-sim-btn.active {
+  background: rgba(0, 212, 255, 0.2);
+  border-color: var(--cyan, #00D4FF);
+  color: var(--cyan, #00D4FF);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+}
+
+.wsb-icon {
+  font-size: 1rem;
+}
+

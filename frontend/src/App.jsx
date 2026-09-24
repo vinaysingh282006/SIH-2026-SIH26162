@@ -1,17 +1,46 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import TopBar         from './components/TopBar';
-import Landing        from './pages/Landing';
-import LiveMap        from './pages/LiveMap';
-import AnomalyFeed    from './pages/AnomalyFeed';
+import TopBar           from './components/TopBar';
+import AnimatedBackground from './components/AnimatedBackground';
+import { WeatherProvider, useWeather } from './context/WeatherContext';
+import Landing          from './pages/Landing';
+import LiveMap          from './pages/LiveMap';
+import AnomalyFeed      from './pages/AnomalyFeed';
 import ExplainDrillDown from './pages/ExplainDrillDown';
-import SensorHealth   from './pages/SensorHealth';
-import Analytics      from './pages/Analytics';
-import Settings       from './pages/Settings';
-import DemoMode       from './pages/DemoMode';
-import StationDetail  from './pages/StationDetail';
-import Roadmap        from './pages/Roadmap';
+import SensorHealth     from './pages/SensorHealth';
+import Analytics        from './pages/Analytics';
+import Settings         from './pages/Settings';
+import DemoMode         from './pages/DemoMode';
+import StationDetail    from './pages/StationDetail';
+import Roadmap          from './pages/Roadmap';
 import { createLiveSocket } from './api/client';
+import './App.css';
+
+function AppContent({ anomalyCount }) {
+  const { currentCondition } = useWeather();
+
+  return (
+    <div className="app-layout">
+      {/* Weather-reactive motion background across entire application */}
+      <AnimatedBackground condition={currentCondition} />
+      <TopBar anomalyCount={anomalyCount} />
+      <main className="main-content">
+        <Routes>
+          <Route path="/"                    element={<Landing />} />
+          <Route path="/map"                 element={<LiveMap />} />
+          <Route path="/stations/:id"        element={<StationDetail />} />
+          <Route path="/anomalies"           element={<AnomalyFeed />} />
+          <Route path="/anomalies/:id"       element={<ExplainDrillDown />} />
+          <Route path="/health"              element={<SensorHealth />} />
+          <Route path="/analytics"           element={<Analytics />} />
+          <Route path="/settings"            element={<Settings />} />
+          <Route path="/demo"                element={<DemoMode />} />
+          <Route path="/roadmap"             element={<Roadmap />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
 
 export default function App() {
   const [anomalyCount, setAnomalyCount] = useState(0);
@@ -27,24 +56,10 @@ export default function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <div className="app-layout">
-        <TopBar anomalyCount={anomalyCount} />
-        <main className="main-content">
-          <Routes>
-            <Route path="/"                    element={<Landing />} />
-            <Route path="/map"                 element={<LiveMap />} />
-            <Route path="/stations/:id"        element={<StationDetail />} />
-            <Route path="/anomalies"           element={<AnomalyFeed />} />
-            <Route path="/anomalies/:id"       element={<ExplainDrillDown />} />
-            <Route path="/health"              element={<SensorHealth />} />
-            <Route path="/analytics"           element={<Analytics />} />
-            <Route path="/settings"            element={<Settings />} />
-            <Route path="/demo"                element={<DemoMode />} />
-            <Route path="/roadmap"             element={<Roadmap />} />
-          </Routes>
-        </main>
-      </div>
-    </BrowserRouter>
+    <WeatherProvider>
+      <BrowserRouter>
+        <AppContent anomalyCount={anomalyCount} />
+      </BrowserRouter>
+    </WeatherProvider>
   );
 }

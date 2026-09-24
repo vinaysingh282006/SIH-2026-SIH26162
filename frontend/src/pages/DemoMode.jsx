@@ -5,6 +5,7 @@
  */
 import { useEffect, useState, useRef } from 'react';
 import { injectAnomaly, fetchStations } from '../api/client';
+import { useWeather } from '../context/WeatherContext';
 import './DemoMode.css';
 
 const ANOMALY_TYPES = [
@@ -15,6 +16,15 @@ const ANOMALY_TYPES = [
   { id: 'noise_burst',  label: 'Noise Burst',             desc: 'High-frequency random noise on humidity' },
   { id: 'cross_sensor', label: 'Cross-Sensor Fault',      desc: 'Temperature spikes, pressure/humidity frozen' },
   { id: 'unit_flip',    label: 'Unit Flip Error',         desc: 'Temperature in °F reported as °C' },
+];
+
+const WEATHER_CONDITIONS = [
+  { id: 'Clear',        icon: '☀️', label: 'Clear Sky' },
+  { id: 'Rain',         icon: '🌧️', label: 'Rain Streaks' },
+  { id: 'Clouds',       icon: '☁️', label: 'Drifting Clouds' },
+  { id: 'Thunderstorm', icon: '⚡', label: 'Thunderstorm' },
+  { id: 'Snow',         icon: '❄️', label: 'Snow Flakes' },
+  { id: 'Fog',          icon: '🌫️', label: 'Fog / Mist' },
 ];
 
 function LogLine({ line }) {
@@ -30,6 +40,7 @@ function LogLine({ line }) {
 }
 
 export default function DemoMode() {
+  const { currentCondition, setCurrentCondition } = useWeather();
   const [stations,     setStations]     = useState([]);
   const [selectedSid,  setSelectedSid]  = useState('');
   const [selectedType, setSelectedType] = useState('spike');
@@ -143,6 +154,29 @@ export default function DemoMode() {
               '⚡ INJECT ANOMALY'
             )}
           </button>
+
+          {/* ── Atmospheric Motion Simulation ─────────────────── */}
+          <div className="demo-weather-sim-box">
+            <div className="form-group-label" style={{ marginTop: '1.5rem', marginBottom: '0.5rem' }}>
+              ATMOSPHERIC SIMULATION (MOTION LAYER)
+            </div>
+            <div className="weather-sim-btn-grid">
+              {WEATHER_CONDITIONS.map(w => (
+                <button
+                  key={w.id}
+                  type="button"
+                  className={`weather-sim-btn ${currentCondition.toLowerCase().includes(w.id.toLowerCase()) ? 'active' : ''}`}
+                  onClick={() => {
+                    setCurrentCondition(w.id);
+                    addLog(`▶ Atmospheric simulation shifted to: ${w.label} (${w.icon})`);
+                  }}
+                >
+                  <span className="wsb-icon">{w.icon}</span>
+                  <span className="wsb-label">{w.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* ── Console log ──────────────────────────────────────── */}

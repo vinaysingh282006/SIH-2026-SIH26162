@@ -3,6 +3,7 @@
  */
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useWeather } from '../context/WeatherContext';
 import './TopBar.css';
 
 const NAV_ITEMS = [
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
 
 export default function TopBar({ anomalyCount = 0 }) {
   const location = useLocation();
+  const { activeWeather } = useWeather();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -71,6 +73,20 @@ export default function TopBar({ anomalyCount = 0 }) {
 
           {/* Right section */}
           <div className="topbar-right">
+            {activeWeather?.primary ? (
+              <NavLink to="/map" className="topbar-weather-pill" title={`Consensus: ${activeWeather.primary.source} · ${activeWeather.primary.condition} · Click to open live map`}>
+                <span className="tw-icon">{activeWeather.primary.icon}</span>
+                <span className="tw-temp font-data">{activeWeather.primary.tempC}°C</span>
+                <span className="tw-source">{activeWeather.primary.source}</span>
+              </NavLink>
+            ) : (
+              <NavLink to="/map" className="topbar-weather-pill" title="Click to open live multi-source meteorological map">
+                <span className="tw-icon">🌤️</span>
+                <span className="tw-temp font-data">24°C</span>
+                <span className="tw-source">Open-Meteo</span>
+              </NavLink>
+            )}
+
             <div className="live-pill">
               <span className="live-dot breathe" />
               <span>LIVE</span>
